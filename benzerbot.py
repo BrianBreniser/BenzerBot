@@ -3,8 +3,8 @@ import socket
 import time
 # Some basic variables used to configure the bot        
 server="irc.cat.pdx.edu" # Server
-channel="#slimbot" # Channel
-botnick="slimbot" # Your bots nick
+channel="#benzertest" # Channel
+botnick="benzerbot" # Your bots nick
 
 
 def ping():
