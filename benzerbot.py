@@ -32,7 +32,7 @@ ircsock.send("NICK " + botnick + "\n")  # Actually assign the nick to the bot
 
 
 joinchan(channel)  # Join the channel using the functions we previously defined
-
+new = 3
 # --- End connect to shit --- #
 
 
@@ -45,8 +45,36 @@ while 1:  # Be careful with these! it might send you to an infinite loop
     if ircmsg.find("PING :") != -1:  # PONG on server PING
         pong()
 
+    if ircmsg.find("PRIVMSG"):
+        splitircmsg = ircmsg.split() + [" ", " ", " "]
+        print "this is the split irc msg:       " + str(splitircmsg)
+
+        talkinguser = str(splitircmsg[0].split("!")[0]).replace(":", "")
+        print "this is the talking user:        " + talkinguser
+
+        talkingchannel = str(splitircmsg[2]).lower()
+        print "this is the channel:             " + talkingchannel
+
+        talkeraddressing = str(splitircmsg[3]).replace(":", "").lower()
+        print "Addressing first word:           " + talkeraddressing
+
+        command = str(splitircmsg[4]).lower()
+        print "using this command:              " + command
+
+        arglist = splitircmsg[5:].remove(" ")
+        print "with these args:                 " + str(arglist)
+
+
+
+
+
+
+
+
+
+
     if ircmsg.find(":" + botnick + ": punch") != -1:
-        ircsock.send("PRIVMSG " + channel + " :No. He's a nice guy!\n")
+        sendmsg(channel, "No, they are a nice person!")
 
     if ircmsg.find(":" + botnick + ": hello") != -1:
         ircsock.send("PRIVMSG " + channel + " :hola\n")
