@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import socket
-import requests
+import requests  # will make post requests to api
 #import time
 # Some basic variables used to configure the bot
 server = "irc.cat.pdx.edu"  # Server
