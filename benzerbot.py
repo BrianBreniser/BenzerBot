@@ -123,10 +123,6 @@ def benzerbot(user, channel, command, arglist):
         print "hello was called"
         sendmsg(channel, "hola %s" % user)
 
-    if command == "punch":
-        print "punch was called"
-        sendmsg(channel, "why would I hit %s, %s" % (arglist[0], user))
-
     if command == "join":
         print "join was called"
         anadmin = isadmin(user)
@@ -155,6 +151,21 @@ def benzerbot(user, channel, command, arglist):
         else:
             sendmsg(channel, "benzer, help, I got %s" % isadmin)
 
+    if command == "help":
+        print "help was called"
+        sendmsg(channel, "Hi, this is the benzerbot help command! Lets go over some basics:")
+        sendmsg(channel, "")
+        sendmsg(channel, "")
+        sendmsg(channel, "")
+        sendmsg(channel, "")
+        sendmsg(channel, "")
+        sendmsg(channel, "")
+        sendmsg(channel, "")
+
+    if command == "pme":
+        print "pme was called"
+        sendmsg(user, "you told me to PM you: %s" % arglist[0])
+
 # --- End Benzerbot's functions --- #
 
 # --- Start infinite loop to do bot things --- #
@@ -172,10 +183,22 @@ while 1:  # Be careful with these! it might send you to an infinite loop
         splitircmsg = ircmsg.split() + [" ", " ", " "]  # cuts string
         user = str(splitircmsg[0].split("!")[0]).replace(":", "")  # user
         channel = str(splitircmsg[2]).lower()  # the channel
+
+        if channel == "benzerbot" or channel == "zuulbot" or channel == "bdbot":  # if channel is pm window
+            channel = user  # makes PM's work
+
         addressing_bot = str(splitircmsg[3]).replace(":", "").lower()  # the bot the command will be sent too
         command = str(splitircmsg[4]).lower()  # the command sent to the bot
         command = command.lower()  # i'd rather not screw with caps problems
         arglist = splitircmsg[5:]  # arglist for the command
+
+        # - Debugging stuff, uncomment to see 'log' - #
+        #print user
+        #print channel
+        #print addressing_bot
+        #print command
+        #print arglist
+        # - End debugging stuff - #
 
         if addressing_bot == "benzerbot":
             benzerbot(user, channel, command, arglist)
