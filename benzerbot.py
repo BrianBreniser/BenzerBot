@@ -123,7 +123,10 @@ def zuulbot (usern, channel, command, arglist):
 	r = requests.post(weblocation + "/newzuul/v1/finduser/", data=payload)
 	if r.status_code == 200:
             return_dict = j.loads(r.text)
-            sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
+	    if return_dict["success"] == "false":
+		sendmsg(channel, "did not find: pleae check spelling")
+	    elif return_dict["success"] == "true":
+            	sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
 	else:
 	    sendmsg(channel, "benzer halp!!! r.status_code returned %" % str(r.status_code))
 
