@@ -107,6 +107,11 @@ def zuulbot (usern, channel, command, arglist):
 	        purchase_item += word + " " 
 	purchase_item = purchase_item[:-1]
 	print purchase_item
+
+	#a bunch of special cases
+	soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can", "soda", "mtdew", "mt.dew" "mountain dew")
+	if purchase_item in soda_list:
+	    purchase_item = "Canned Beverage"
 		
         payload = {"name": usern, "item": purchase_item}
         r = requests.post(weblocation + "/newzuul/v1/purchase/", data=payload)
@@ -120,7 +125,7 @@ def zuulbot (usern, channel, command, arglist):
             	sendmsg(channel, "woot, worked")
             	sendmsg(channel, str(r.text))
 	    else:
-		sendmsg(channel, "benzer, halp! r.text['success'} != (true|false)!!")
+		sendmsg(channel, "benzer, halp! r.text['success'} != (true|false)")
         else:
             sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
 
