@@ -101,7 +101,14 @@ def zuulbot (usern, channel, command, arglist):
 
     if command == "buy" or command == "purchase":
         sendmsg(channel, "still an alpha feature!!!!")
-        payload = {"name": usern, "item": arglist[0]}
+	purchase_item = ""
+	for word in arglist:
+	    if word != " ":
+	        purchase_item += word + " " 
+	purchase_item = purchase_item[:-1]
+	print purchase_item
+		
+        payload = {"name": usern, "item": purchase_item}
         r = requests.post(weblocation + "/newzuul/v1/purchase/", data=payload)
         if r.status_code == 200:
 	    return_text = j.loads(r.text)
@@ -136,7 +143,10 @@ def zuulbot (usern, channel, command, arglist):
 	r = requests.post(weblocation + "/newzuul/v1/finditem/", data=payload)
 	if r.status_code == 200:
             return_dict = j.loads(r.text)
-            sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
+	    if return_dict["success"] == "false":
+		sendmsg(channel, "did not find: pleae check spelling")
+	    elif return_dict["success"] == "true":
+            	sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
 	else:
 	    sendmsg(channel, "benzer halp!!! r.status_code returned %" % str(r.status_code))
 
