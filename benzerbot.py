@@ -29,11 +29,11 @@ def addchan(chan):
     channelz.close()
 
 
-def isadmin(usertocheck): #returns a string, not an int (why I have no fucking idea)
+def isadmin(usertocheck):  # returns a string, not an int (why I have no fucking idea)
     myadmin = '0'
     admins = open("admins", "r")
     for admin in admins:
-        admin = admin[:-1] #remove the newline from the file
+        admin = admin[:-1]  # remove the newline from the file
         admin.lower()
         if admin == usertocheck.lower():
             myadmin = '1'
@@ -49,6 +49,16 @@ def addadmin(username):
     adminz = open("admins", "a")
     adminz.write(username.lower() + "\n")
     adminz.close()
+
+
+def concat_list(list_in):  # Creates strings (with spaces) out of a list sent in
+    print "concat_list was called"
+    my_string = ""
+    for word in list_in:
+        if word != " ":
+            my_string += word + " "
+    my_string = my_string[:-1]
+    return my_string
 
 # --- End support functions --- #
 
@@ -78,7 +88,7 @@ def bdbot(user, channel, command, arglist):
     sendmsg(channel, "Hey, bdbot is not done being build yet!!")
 
     if command == "help":
-	sendmsg(channel, "umm, bdbot is, like, not even started yet :/ be back soon!")
+        sendmsg(channel, "umm, bdbot is, like, not even started yet :/ be back soon!")
 
 
 # --- End bdbot's functions --- #
@@ -86,87 +96,110 @@ def bdbot(user, channel, command, arglist):
 
 # --- Start Zuulbot's functions --- #
 
+# - Helper Functions - #
 
-def zuulbot (usern, channel, command, arglist):
+
+def finduser(usern, channel):
+    print "finduser helper function was called"
+    weblocation = "http://zuul.cat.pdx.edu"
+
+    payload = {"name": usern}
+    r = requests.post(weblocation + "/newzuul/v1/finduser/", data=payload)
+    if r.status_code == 200:
+        return_dict = j.loads(r.text)
+        if return_dict["success"] == "false":
+            sendmsg(channel, "did not find: please check spelling (check zuul.cat.pdx.edu/newzuul for full user list")
+        elif return_dict["success"] == "true":
+            sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
+    else:
+        sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
+
+
+def finditem(item_name, channel):
+    print "finditem helper function called"
+    weblocation = "http://zuul.cat.pdx.edu"
+
+    payload = {"name": item_name}
+    r = requests.post(weblocation + "/newzuul/v1/finditem/", data=payload)
+    if r.status_code == 200:
+        return_dict = j.loads(r.text)
+        if return_dict["success"] == "false":
+            sendmsg(channel, "did not find: pleae check spelling")
+        elif return_dict["success"] == "true":
+            sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
+    else:
+        sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
+
+
+def purchaseitem(usern, item_name, channel):
+    print "purchaseitem helper function called"
+    weblocation = "http://zuul.cat.pdx.edu"
+
+    payload = {"name": usern, "item": item_name}
+    r = requests.post(weblocation + "/newzuul/v1/purchase/", data=payload)
+    if r.status_code == 200:
+        return_text = j.loads(r.text)
+        #sendmsg(channel, str(return_text))  # debugging lines
+        #sendmsg(channel, str(r.text))  # debugging lines
+        if return_text["success"] == "false":
+            sendmsg(channel, "The Purchase was unsuccessful, is your username added to zuul? Is the item's name correct? ")
+        elif return_text["success"] == "true":
+            sendmsg(channel, "woot, worked")
+    else:
+        sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
+
+# - End Helper Functions - #
+
+
+def zuulbot(usern, channel, command, arglist):
     weblocation = "http://zuul.cat.pdx.edu"
     print "zuulbot was called"
 
-    if command == "help":
+    if command == "help" or command == "halp" or command == "?" or command == "-help" or command == "--help":
         sendmsg(channel, "(buy|purchase) $item: purchases an item")
         sendmsg(channel, "(finduser|fus) $user: display users bank")
         sendmsg(channel, "(finditem|fit) $item: display item price")
         sendmsg(channel, "(listitems|li): list's all items")
-	sendmsg(channel, "you may /query b3nzerbot and use zuulbot: commands like normal")
-	sendmsg(channel, "I also respond to zb or zb:")
+        sendmsg(channel, "you may /query b3nzerbot and use zuulbot: commands like normal")
+        sendmsg(channel, "I also respond to zb or zb:")
 
     if command == "buy" or command == "purchase":
-        sendmsg(channel, "still an alpha feature!!!!")
-	purchase_item = ""
-	for word in arglist:
-	    if word != " ":
-	        purchase_item += word + " " 
-	purchase_item = purchase_item[:-1]
-	print purchase_item
+        sendmsg(channel, "still an beta feature!!!!")
+        purchase_item = concat_list(arglist)
 
-	#a bunch of special cases
-	soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can", "soda", "mtdew", "mt.dew" "mountain dew")
-	if purchase_item in soda_list:
-	    purchase_item = "Canned Beverage"
-		
-        payload = {"name": usern, "item": purchase_item}
-        r = requests.post(weblocation + "/newzuul/v1/purchase/", data=payload)
-        if r.status_code == 200:
-	    return_text = j.loads(r.text)
-	    #sendmsg(channel, str(return_text))  # debugging lines
-            #sendmsg(channel, str(r.text))  # debugging lines
-	    if return_text["success"] == "false":
-		sendmsg(channel, "benzer, halp! r.text['success'] is false!")
-	    elif return_text["success"] == "true":
-            	sendmsg(channel, "woot, worked")
-            	sendmsg(channel, str(r.text))
-	    else:
-		sendmsg(channel, "benzer, halp! r.text['success'} != (true|false)")
-        else:
-            sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
+        #a bunch of special cases
+        soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can", "soda", "mtdew", "mt.dew",
+             "mountain dew")
+        if purchase_item in soda_list:
+            purchase_item = "Canned Beverage"
+
+        finduser(usern, channel)
+        finditem(purchase_item, channel)
+        purchaseitem(usern, purchase_item, channel)
 
     if command == "finduser" or command == "fus":
-	print "finduser was called"
-	payload = {"name": arglist[0]}
-	r = requests.post(weblocation + "/newzuul/v1/finduser/", data=payload)
-	if r.status_code == 200:
-            return_dict = j.loads(r.text)
-	    if return_dict["success"] == "false":
-		sendmsg(channel, "did not find: pleae check spelling")
-	    elif return_dict["success"] == "true":
-            	sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
-	else:
-	    sendmsg(channel, "benzer halp!!! r.status_code returned %" % str(r.status_code))
+        print "finduser was called"
+        person = concat_list(arglist)
+        finduser(person, channel)
 
     if command == "finditem" or command == "fit":
-	print "finditem was called"
-	payload = {"name": arglist[0]}
-	r = requests.post(weblocation + "/newzuul/v1/finditem/", data=payload)
-	if r.status_code == 200:
-            return_dict = j.loads(r.text)
-	    if return_dict["success"] == "false":
-		sendmsg(channel, "did not find: pleae check spelling")
-	    elif return_dict["success"] == "true":
-            	sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
-	else:
-	    sendmsg(channel, "benzer halp!!! r.status_code returned %" % str(r.status_code))
+        print "finditem was called"
+        purchase_item = concat_list(arglist)
+        finditem(purchase_item, channel)
 
     if command == "listitems" or command == "li":
         print "listitems was called"
         payload = {"name": arglist[0], "item": arglist[1]}
         r = requests.post(weblocation + "/newzuul/v1/listall/", data=payload)
         if r.status_code == 200:
-	    return_dict = j.loads(r.text)
+            return_dict = j.loads(r.text)
             for item in return_dict:
                 if item == "success":
                     continue
                 else:
-                    sendmsg(channel, "%s: %s" % (str(item), str	(return_dict[item])))
-        else: sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
+                    sendmsg(channel, "%s: %s" % (str(item), str(return_dict[item])))
+        else:
+            sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
 
 # --- End Zuulbot's functions --- #
 
