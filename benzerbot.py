@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import socket
+import socket, ssl
 import requests  # will make post requests to api
+import json as j
 #import time
 # Some basic variables used to configure the bot
 server = "irc.cat.pdx.edu"  # Server
@@ -54,7 +55,8 @@ def addadmin(username):
 
 # --- Start connect to shit -- #
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ircsock.connect((server, 6667))  # Connect to the server using the port 6667
+ircsock.connect((server, 6697))  # Connect to the server using the port 6667
+ircsock = ssl.wrap_socket(ircsock)
 ircsock.send("USER " + botnick + " " + botnick + " " + botnick +
     " :This is benzers bot\n")  # user authentication
 ircsock.send("NICK " + botnick + "\n")  # Actually assign the nick to the bot
@@ -75,6 +77,9 @@ def bdbot(user, channel, command, arglist):
 
     sendmsg(channel, "Hey, bdbot not done being build yet!!")
 
+    if command == "help":
+	sendmsg(channel, "umm, bdbot is, like, not even started yet :/ be back soon!")
+
 
 # --- End bdbot's functions --- #
 
@@ -83,33 +88,67 @@ def bdbot(user, channel, command, arglist):
 
 
 def zuulbot (usern, channel, command, arglist):
-    weblocation = "http://url/"
+    weblocation = "http://zuul.cat.pdx.edu"
     print "zuulbot was called"
 
     if command == "help":
-        sendmsg(channel, "(buy|purchase) $user $item: purchases an item")
+        sendmsg(channel, "(buy|purchase) $item: purchases an item")
         sendmsg(channel, "(finduser|fus) $user: display users bank")
         sendmsg(channel, "(finditem|fit) $item: display item price")
-        sendmsg(channel, "(listitem|li): list's all items")
+        sendmsg(channel, "(listitems|li): list's all items")
+	sendmsg(channel, "you may /query b3nzerbot and use zuulbot: commands like normal")
+	sendmsg(channel, "I also respond to zb or zb:")
 
     if command == "buy" or command == "purchase":
         sendmsg(channel, "still an alpha feature!!!!")
-        payload = {"name": arglist[0], "item": arglist[1]}
-        r = requests.post(weblocation + "newzuul/v1/purchase/", data=payload)
+        payload = {"name": usern, "item": arglist[0]}
+        r = requests.post(weblocation + "/newzuul/v1/purchase/", data=payload)
         if r.status_code == 200:
-            sendmsg(channel, "woot, worked")
-            sendmsg(channel, str(r.text))
+	    return_text = j.loads(r.text)
+	    #sendmsg(channel, str(return_text))  # debugging lines
+            #sendmsg(channel, str(r.text))  # debugging lines
+	    if return_text["success"] == "false":
+		sendmsg(channel, "benzer, halp! r.text['success'] is false!")
+	    elif return_text["success"] == "true":
+            	sendmsg(channel, "woot, worked")
+            	sendmsg(channel, str(r.text))
+	    else:
+		sendmsg(channel, "benzer, halp! r.text['success'} != (true|false)!!")
         else:
-            sendmsg(channel, "benzer, halp! r.status did not respond 200")
+            sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
 
     if command == "finduser" or command == "fus":
-        sendmsg(channel, "this doesn't work yet :/")
+	print "finduser was called"
+	payload = {"name": arglist[0]}
+	r = requests.post(weblocation + "/newzuul/v1/finduser/", data=payload)
+	if r.status_code == 200:
+            return_dict = j.loads(r.text)
+            sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
+	else:
+	    sendmsg(channel, "benzer halp!!! r.status_code returned %" % str(r.status_code))
 
     if command == "finditem" or command == "fit":
-        sendmsg(channel, "this doesn't work yet :/")
+	print "finditem was called"
+	payload = {"name": arglist[0]}
+	r = requests.post(weblocation + "/newzuul/v1/finditem/", data=payload)
+	if r.status_code == 200:
+            return_dict = j.loads(r.text)
+            sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
+	else:
+	    sendmsg(channel, "benzer halp!!! r.status_code returned %" % str(r.status_code))
 
-    if command == "finduser" or command == "fus":
-        sendmsg(channel, "this doesn't work yet :/")
+    if command == "listitems" or command == "li":
+        print "listitems was called"
+        payload = {"name": arglist[0], "item": arglist[1]}
+        r = requests.post(weblocation + "/newzuul/v1/listall/", data=payload)
+        if r.status_code == 200:
+	    return_dict = j.loads(r.text)
+            for item in return_dict:
+                if item == "success":
+                    continue
+                else:
+                    sendmsg(channel, "%s: %s" % (str(item), str	(return_dict[item])))
+        else: sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
 
 # --- End Zuulbot's functions --- #
 
@@ -119,7 +158,7 @@ def zuulbot (usern, channel, command, arglist):
 def benzerbot(user, channel, command, arglist):
     print "benzerbot was called"
 
-    if command == "hello":
+    if command == "hello" or command == "hi" or command == "hola" or command == "oi" or command == "hey":
         print "hello was called"
         sendmsg(channel, "hola %s" % user)
 
@@ -151,16 +190,15 @@ def benzerbot(user, channel, command, arglist):
         else:
             sendmsg(channel, "benzer, help, I got %s" % isadmin)
 
-    if command == "help":
+    if command == "help" or command == "halp" or command == "derp" or command == "wat" or command == "what":
         print "help was called"
-        sendmsg(channel, "Hi, this is the benzerbot help command! Lets go over some basics:")
-        sendmsg(channel, "")
-        sendmsg(channel, "")
-        sendmsg(channel, "")
-        sendmsg(channel, "")
-        sendmsg(channel, "")
-        sendmsg(channel, "")
-        sendmsg(channel, "")
+        sendmsg(channel, "Commands:")
+        sendmsg(channel, "(hello|hi|hey|oi|hola)")
+        sendmsg(channel, "join $channel")
+        sendmsg(channel, "join $channel permanently")
+        sendmsg(channel, "you can also address:")
+        sendmsg(channel, "zuulbot: help")
+        sendmsg(channel, "bdbot: help")
 
     if command == "pme":
         print "pme was called"
@@ -193,20 +231,20 @@ while 1:  # Be careful with these! it might send you to an infinite loop
         arglist = splitircmsg[5:]  # arglist for the command
 
         # - Debugging stuff, uncomment to see 'log' - #
-        #print user
-        #print channel
-        #print addressing_bot
-        #print command
-        #print arglist
+        print "u: " + user
+        print "c: " + channel
+        print "b: " + addressing_bot
+        print "c: " + command
+        print "a: " + str(arglist)
         # - End debugging stuff - #
 
-        if addressing_bot == "benzerbot":
+        if addressing_bot == "benzerbot" or addressing_bot == "bb":
             benzerbot(user, channel, command, arglist)
 
-        if addressing_bot == "zuulbot":
+        if addressing_bot == "zuulbot" or addressing_bot == "zb":
             zuulbot(user, channel, command, arglist)
 
-        if addressing_bot == "bdbot":
+        if addressing_bot == "bdbot" or addressing_bot == "bd":
             bdbot(user, channel, command, arglist)
 
 # --- End infinite loop to do bot things --- #
