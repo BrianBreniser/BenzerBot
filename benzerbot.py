@@ -75,7 +75,7 @@ channels.close()
 def bdbot(user, channel, command, arglist):
     print "bdbot was called"
 
-    sendmsg(channel, "Hey, bdbot not done being build yet!!")
+    sendmsg(channel, "Hey, bdbot is not done being build yet!!")
 
     if command == "help":
 	sendmsg(channel, "umm, bdbot is, like, not even started yet :/ be back soon!")
