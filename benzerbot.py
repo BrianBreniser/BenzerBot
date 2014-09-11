@@ -3,15 +3,14 @@ import socket
 import ssl
 import requests  # will make post requests to api
 import json as j
-from multiprocessing import Process
-from time import sleep
-import Queue as que
+from time import sleep, time
 #import time
 # Some basic variables used to configure the bot
 server = "irc.cat.pdx.edu"  # Server
 botnick = "bb"  # Your bots nick
 password = "benzerbot"
 
+timestamp = time()
 
 # --- Start support functions --- #
 
@@ -22,7 +21,11 @@ def pong():
 
 
 def sendmsg(chan, msg):  # send msg to chan
+    global timestamp
+    while time() <= timestamp + 1:
+        sleep(.1)
     ircsock.send("PRIVMSG " + chan + " :" + msg + "\n")
+    timestamp = time()
 
 
 def joinchan(chan):  # This function is used to join channels.
@@ -76,7 +79,7 @@ ircsock = ssl.wrap_socket(ircsock)
 ircsock.send("USER " + botnick + " " + botnick + " " + botnick +
     " :This is benzers bot\n")  # user authentication
 ircsock.send("NICK " + botnick + "\n")  # Actually assign the nick to the bot
-ircsock.send('PRIVMSG ' + 'NICKSERV ' + 'IDENTIFY ' + password)
+ircsock.send("PRIVMSG NickServ :" + 'IDENTIFY ' + password + "\n")
 
 
 #Open all channels in chanel_list file
@@ -93,10 +96,10 @@ channels.close()
 def bdbot(user, channel, command, arglist):
     print "bdbot was called"
 
-    q_sendmsg(channel, "Hey, bdbot is not done being build yet!!")
+    sendmsg(channel, "Hey, bdbot is not done being build yet!!")
 
     if command == "help":
-        q_sendmsg(channel, "umm, bdbot is, like, not even started yet :/ be back soon!")
+        sendmsg(channel, "umm, bdbot is, like, not even started yet :/ be back soon!")
 
 
 # --- End bdbot's functions --- #
@@ -116,11 +119,11 @@ def finduser(usern, channel):
     if r.status_code == 200:
         return_dict = j.loads(r.text)
         if return_dict["success"] == "false":
-            q_sendmsg(channel, "did not find: please check spelling (check zuul.cat.pdx.edu/newzuul for full user list")
+            sendmsg(channel, "did not find: please check spelling (check zuul.cat.pdx.edu/newzuul for full user list")
         elif return_dict["success"] == "true":
-            q_sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
+            sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
     else:
-        q_sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
+        sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
 
 
 def finditem(item_name, channel):
@@ -132,11 +135,11 @@ def finditem(item_name, channel):
     if r.status_code == 200:
         return_dict = j.loads(r.text)
         if return_dict["success"] == "false":
-            q_sendmsg(channel, "did not find: pleae check spelling")
+            sendmsg(channel, "did not find: pleae check spelling")
         elif return_dict["success"] == "true":
-            q_sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
+            sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
     else:
-        q_sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
+        sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
 
 
 def purchaseitem(usern, item_name, channel):
@@ -147,14 +150,14 @@ def purchaseitem(usern, item_name, channel):
     r = requests.post(weblocation + "/newzuul/v1/purchase/", data=payload)
     if r.status_code == 200:
         return_text = j.loads(r.text)
-        #q_sendmsg(channel, str(return_text))  # debugging lines
-        #q_sendmsg(channel, str(r.text))  # debugging lines
+        #sendmsg(channel, str(return_text))  # debugging lines
+        #sendmsg(channel, str(r.text))  # debugging lines
         if return_text["success"] == "false":
-            q_sendmsg(channel, "The Purchase was unsuccessful, is your username added to zuul? Is the item's name correct? ")
+            sendmsg(channel, "The Purchase was unsuccessful, is your username added to zuul? Is the item's name correct? ")
         elif return_text["success"] == "true":
-            q_sendmsg(channel, "woot, worked")
+            sendmsg(channel, "woot, worked")
     else:
-        q_sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
+        sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
 
 # - End Helper Functions - #
 
@@ -164,15 +167,15 @@ def zuulbot(usern, channel, command, arglist):
     print "zuulbot was called"
 
     if command == "help" or command == "halp" or command == "?" or command == "-help" or command == "--help":
-        q_sendmsg(channel, "(buy|purchase) $item: purchases an item")
-        q_sendmsg(channel, "(finduser|fus) $user: display users bank")
-        q_sendmsg(channel, "(finditem|fit) $item: display item price")
-        q_sendmsg(channel, "(listitems|li): list's all items")
-        q_sendmsg(channel, "you may /query b3nzerbot and use zuulbot: commands like normal")
-        q_sendmsg(channel, "I also respond to zb or zb:")
+        sendmsg(channel, "(buy|purchase) $item: purchases an item")
+        sendmsg(channel, "(finduser|fus) $user: display users bank")
+        sendmsg(channel, "(finditem|fit) $item: display item price")
+        sendmsg(channel, "(listitems|li): list's all items")
+        sendmsg(channel, "you may /query b3nzerbot and use zuulbot: commands like normal")
+        sendmsg(channel, "I also respond to zb or zb:")
 
     if command == "buy" or command == "purchase":
-        q_sendmsg(channel, "still an beta feature!!!!")
+        sendmsg(channel, "still an beta feature!!!!")
         purchase_item = concat_list(arglist)
 
         #a bunch of special cases
@@ -205,9 +208,9 @@ def zuulbot(usern, channel, command, arglist):
                 if item == "success":
                     continue
                 else:
-                    q_sendmsg(channel, "%s: %s" % (str(item), str(return_dict[item])))
+                    sendmsg(channel, "%s: %s" % (str(item), str(return_dict[item])))
         else:
-            q_sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
+            sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
 
 # --- End Zuulbot's functions --- #
 
@@ -219,81 +222,56 @@ def benzerbot(user, channel, command, arglist):
 
     if command == "hello" or command == "hi" or command == "hola" or command == "oi" or command == "hey":
         print "hello was called"
-        q_sendmsg(channel, "hola %s" % user)
+        sendmsg(channel, "hola %s" % user)
 
     if command == "join":
         print "join was called"
         anadmin = isadmin(user)
         if anadmin == '1':
-            q_sendmsg(channel, "Okay, i'll join %s, %s" % (arglist[0], user))
+            sendmsg(channel, "Okay, i'll join %s, %s" % (arglist[0], user))
             joinchan(arglist[0])
 
             if arglist[1].lower() == "permanently":
                 print "permanent join list was called"
-                q_sendmsg(channel, "i'll even join %s permanently!" % arglist[0])
+                sendmsg(channel, "i'll even join %s permanently!" % arglist[0])
                 addchan(arglist[0])
 
         elif anadmin == '0':
-            q_sendmsg(channel, "But, I don't take orders from %s" % user)
+            sendmsg(channel, "But, I don't take orders from %s" % user)
         else:
-            q_sendmsg(channel, "Benzer, help, I got %s" % isadmin)
+            sendmsg(channel, "Benzer, help, I got %s" % isadmin)
 
     if command == "addadmin":
         print "newadmin was called"
         anadmin = isadmin(user)
         if anadmin == '1':
-            q_sendmsg(channel, "okay, %s is now an admin" % arglist[0])
+            sendmsg(channel, "okay, %s is now an admin" % arglist[0])
             addadmin(arglist[0])
         elif anadmin == '0':
-            q_sendmsg(channel, "But, I don't take orders from %s" % user)
+            sendmsg(channel, "But, I don't take orders from %s" % user)
         else:
-            q_sendmsg(channel, "benzer, help, I got %s" % isadmin)
+            sendmsg(channel, "benzer, help, I got %s" % isadmin)
 
     if command == "help" or command == "halp" or command == "derp" or command == "wat" or command == "what":
         print "help was called"
-        q_sendmsg(channel, "Commands:")
-        q_sendmsg(channel, "(hello|hi|hey|oi|hola)")
-        q_sendmsg(channel, "join $channel")
-        q_sendmsg(channel, "join $channel permanently")
-        q_sendmsg(channel, "you can also address:")
-        q_sendmsg(channel, "zuulbot: help")
-        q_sendmsg(channel, "bdbot: help")
+        sendmsg(channel, "Commands:")
+        sendmsg(channel, "(hello|hi|hey|oi|hola)")
+        sendmsg(channel, "join $channel")
+        sendmsg(channel, "join $channel permanently")
+        sendmsg(channel, "you can also address:")
+        sendmsg(channel, "zuulbot: help")
+        sendmsg(channel, "bdbot: help")
 
     if command == "pme":
         print "pme was called"
-        q_sendmsg(user, "you told me to PM you: %s" % arglist[0])
+        sendmsg(user, "you told me to PM you: %s" % arglist[0])
 
 # --- End Benzerbot's functions --- #
-
-# --- Start infinite queue loop --- #
-
-
-def q_sendmsg(thechannel, thewords):
-    op = open("queue.txt", "a")
-    op.write(thechannel + " " + thewords + "\n")
-    op.close()
-
-
-def infqueue():
-    while 1:
-        print "things"
-        try:
-            fp = open("queue.txt", "rw+")
-        except IOError, e:
-            print e.errno
-            print e
-        if fp is True:
-            with open('queue.txt', 'r') as fin:
-                data = fin.read().splitlines(True)
-            with open('queue.txt', 'w') as fout:
-                fout.writelines(data[1:])
-
-# --- End infinite queue loop --- #
 
 # --- Start infinite loop to do bot things --- #
 
 
-def mainprog():
+def main():
     while 1:  # Be careful with these! it might send you to an infinite loop
         ircmsg = ircsock.recv(2048)  # receive data from the server
         ircmsg = ircmsg.strip('\n\r')  # removing any unnecessary linebreaks.
@@ -339,7 +317,6 @@ def mainprog():
 # --- Start multiprocess threading --- #
 
 if __name__ == '__main__':
-    Process(target=infqueue).start()
-    Process(target=mainprog).start()
+    main()
 
 # --- End multiprocess threading --- #
