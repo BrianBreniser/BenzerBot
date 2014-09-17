@@ -118,28 +118,43 @@ def finduser(usern, channel):
     r = requests.post(weblocation + "/newzuul/v1/finduser/", data=payload)
     if r.status_code == 200:
         return_dict = j.loads(r.text)
-        if return_dict["success"] == "false":
-            sendmsg(channel, "did not find: please check spelling (check zuul.cat.pdx.edu/newzuul for full user list")
-        elif return_dict["success"] == "true":
+        if return_dict["success"] == "true":
             sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
+            return True
     else:
         sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
-
+    return False
 
 def finditem(item_name, channel):
     print "finditem helper function called"
     weblocation = "http://zuul.cat.pdx.edu"
 
+    #a bunch of special purchase cases
+    soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can", "soda", "mtdew", "mt.dew",
+         "mountain dew")
+
+    if item_name.lower() in soda_list:
+        item_name = "Canned Beverage"
+
+    if item_name.lower() == "cheese":
+        item_name = "String Cheese"
+
+    if item_name.lower() == "rice krispies":
+        item_name = "Rice Krispies Bar"
+
+    if item_name.lower() == "granola":
+        item_name = "Granola Bar"
+
     payload = {"name": item_name}
     r = requests.post(weblocation + "/newzuul/v1/finditem/", data=payload)
     if r.status_code == 200:
         return_dict = j.loads(r.text)
-        if return_dict["success"] == "false":
-            sendmsg(channel, "did not find: pleae check spelling")
-        elif return_dict["success"] == "true":
+        if return_dict["success"] == "true":
             sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
+            return True
     else:
         sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
+    return False
 
 
 def purchaseitem(usern, item_name, channel):
@@ -155,7 +170,7 @@ def purchaseitem(usern, item_name, channel):
         if return_text["success"] == "false":
             sendmsg(channel, "The Purchase was unsuccessful, is your username added to zuul? Is the item's name correct? ")
         elif return_text["success"] == "true":
-            sendmsg(channel, "woot, worked")
+            sendmsg(channel, "user %s purchased %s" % (usern, item_name))
     else:
         sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
 
@@ -167,38 +182,53 @@ def zuulbot(usern, channel, command, arglist):
     print "zuulbot was called"
 
     if command == "help" or command == "halp" or command == "?" or command == "-help" or command == "--help":
+        sendmsg(channel, "I respond to zuulbot, zuulbot:, zb or zb:")
         sendmsg(channel, "(buy|purchase) $item: purchases an item")
-        sendmsg(channel, "(finduser|fus) $user: display users bank")
-        sendmsg(channel, "(finditem|fit) $item: display item price")
-        sendmsg(channel, "(listitems|li): list's all items")
-        sendmsg(channel, "you may /query b3nzerbot and use zuulbot: commands like normal")
-        sendmsg(channel, "I also respond to zb or zb:")
+        sendmsg(channel, "find ($user|$item) $user: display users bank, $item: displays item price")
+        sendmsg(channel, "(listitems|li): list's all items (in theory)")
+        sendmsg(channel, "you may /query bb and use zb: commands like normal")
 
-    if command == "buy" or command == "purchase":
-        sendmsg(channel, "still an beta feature!!!!")
+    elif command == "buy" or command == "purchase":
+        sendmsg(channel, "still a beta feature!!!!")
         purchase_item = concat_list(arglist)
 
-        #a bunch of special cases
+        #a bunch of special purchase cases
         soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can", "soda", "mtdew", "mt.dew",
              "mountain dew")
-        if purchase_item in soda_list:
+
+        if purchase_item.lower() in soda_list:
             purchase_item = "Canned Beverage"
 
-        finduser(usern, channel)
-        finditem(purchase_item, channel)
-        purchaseitem(usern, purchase_item, channel)
+        if purchase_item.lower() == "cheese":
+            purchase_item = "String Cheese"
 
-    if command == "finduser" or command == "fus":
-        print "finduser was called"
-        person = concat_list(arglist)
-        finduser(person, channel)
+        if purchase_item.lower() == "rice krispies":
+            purchase_item = "Rice Krispies Bar"
 
-    if command == "finditem" or command == "fit":
-        print "finditem was called"
-        purchase_item = concat_list(arglist)
-        finditem(purchase_item, channel)
+        if purchase_item.lower() == "granola":
+            purchase_item = "Granola Bar"
 
-    if command == "listitems" or command == "li":
+
+        finus = finduser(usern, channel)
+        finit = finditem(purchase_item, channel)
+        if finus is False:
+            sendmsg(channel, "that user was not found")
+        if finit is False:
+            sendmsg(channel, "that item was not found!")
+        if finus is True and finit is True:
+            purchaseitem(usern, purchase_item, channel)
+
+    elif command == "find" or command == "findme" or command == "finditem" or command == "findthing":
+        print "general find was called"
+        find_me = concat_list(arglist)
+        if finditem(find_me, channel) is False:
+            if finduser(find_me, channel) is False:
+                sendmsg(channel, "did not find, please check spelling (check zuul.cat.pdx.edu/newzuul for list)")
+
+    elif command == "finduser" or command == "fus" or command == "finditem" or command == "fit":
+        sendmsg(channel, "command %s is defunct, please use 'find' for all searches from now on" % command)
+
+    elif command == "listitems" or command == "li":
         print "listitems was called"
         payload = {"name": arglist[0], "item": arglist[1]}
         r = requests.post(weblocation + "/newzuul/v1/listall/", data=payload)
@@ -224,7 +254,7 @@ def benzerbot(user, channel, command, arglist):
         print "hello was called"
         sendmsg(channel, "hola %s" % user)
 
-    if command == "join":
+    elif command == "join":
         print "join was called"
         anadmin = isadmin(user)
         if anadmin == '1':
@@ -241,7 +271,7 @@ def benzerbot(user, channel, command, arglist):
         else:
             sendmsg(channel, "Benzer, help, I got %s" % isadmin)
 
-    if command == "addadmin":
+    elif command == "addadmin":
         print "newadmin was called"
         anadmin = isadmin(user)
         if anadmin == '1':
@@ -252,17 +282,18 @@ def benzerbot(user, channel, command, arglist):
         else:
             sendmsg(channel, "benzer, help, I got %s" % isadmin)
 
-    if command == "help" or command == "halp" or command == "derp" or command == "wat" or command == "what":
+    elif command == "help" or command == "halp" or command == "derp" or command == "wat" or command == "what":
         print "help was called"
         sendmsg(channel, "Commands:")
         sendmsg(channel, "(hello|hi|hey|oi|hola)")
         sendmsg(channel, "join $channel")
         sendmsg(channel, "join $channel permanently")
+        sendmsg(channel, "you can also pm: bb ")
         sendmsg(channel, "you can also address:")
-        sendmsg(channel, "zuulbot: help")
-        sendmsg(channel, "bdbot: help")
+        sendmsg(channel, "(zuulbot|zb): help")
+        sendmsg(channel, "(bdbot|bd): help")
 
-    if command == "pme":
+    elif command == "pme":
         print "pme was called"
         sendmsg(user, "you told me to PM you: %s" % arglist[0])
 
