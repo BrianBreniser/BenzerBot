@@ -110,7 +110,7 @@ def bdbot(user, channel, command, arglist):
 # - Helper Functions - #
 
 
-def finduser(usern, channel):
+def finduser(usern, channel, quiet=False):
     print "finduser helper function was called"
     weblocation = "http://zuul.cat.pdx.edu"
 
@@ -119,19 +119,21 @@ def finduser(usern, channel):
     if r.status_code == 200:
         return_dict = j.loads(r.text)
         if return_dict["success"] == "true":
-            sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
-            return True
+            if quiet is False:
+                sendmsg(channel, "User: %s Has bank of: %s" % (str(return_dict["name"]), str(return_dict["bank"])))
+            return True, str(return_dict["name"]), str(return_dict["bank"])
     else:
         sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
-    return False
+    return False, "none", "none"
 
-def finditem(item_name, channel):
+
+def finditem(item_name, channel, quiet=False):
     print "finditem helper function called"
     weblocation = "http://zuul.cat.pdx.edu"
 
-    #a bunch of special purchase cases
-    soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can", "soda", "mtdew", "mt.dew",
-         "mountain dew")
+    # a bunch of special purchase cases
+    soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can",
+                 "soda", "mtdew", "mt.dew", "mountain dew")
 
     if item_name.lower() in soda_list:
         item_name = "Canned Beverage"
@@ -150,11 +152,12 @@ def finditem(item_name, channel):
     if r.status_code == 200:
         return_dict = j.loads(r.text)
         if return_dict["success"] == "true":
-            sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
-            return True
+            if quiet is False:
+                sendmsg(channel, "item: %s Costs: %s" % (str(return_dict["name"]), str(return_dict["cost"])))
+            return True, str(return_dict["name"]), str(return_dict["cost"])
     else:
         sendmsg(channel, "benzer, halp!!! r.status_code returned %" % str(r.status_code))
-    return False
+    return False, "none", "none"
 
 
 def purchaseitem(usern, item_name, channel):
@@ -170,7 +173,7 @@ def purchaseitem(usern, item_name, channel):
         if return_text["success"] == "false":
             sendmsg(channel, "The Purchase was unsuccessful, is your username added to zuul? Is the item's name correct? ")
         elif return_text["success"] == "true":
-            sendmsg(channel, "user %s purchased %s" % (usern, item_name))
+            return True
     else:
         sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
 
@@ -189,12 +192,13 @@ def zuulbot(usern, channel, command, arglist):
         sendmsg(channel, "you may /query bb and use zb: commands like normal")
 
     elif command == "buy" or command == "purchase":
-        sendmsg(channel, "still a beta feature!!!!")
+        # arglist is the list of things the person wants to buy, we concat them
+        # into one string, and send that string as a single argument
         purchase_item = concat_list(arglist)
 
-        #a bunch of special purchase cases
-        soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can", "soda", "mtdew", "mt.dew",
-             "mountain dew")
+        # a bunch of special purchase cases
+        soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can",
+                     "soda", "mtdew", "mt.dew", "mountain dew")
 
         if purchase_item.lower() in soda_list:
             purchase_item = "Canned Beverage"
@@ -207,16 +211,20 @@ def zuulbot(usern, channel, command, arglist):
 
         if purchase_item.lower() == "granola":
             purchase_item = "Granola Bar"
+        # End special cases
 
-
-        finus = finduser(usern, channel)
-        finit = finditem(purchase_item, channel)
-        if finus is False:
+        booluser, username, userbank = finduser(usern, channel)
+        boolitem, itemname, itemcost = finditem(purchase_item, channel)
+        if booluser is False:
             sendmsg(channel, "that user was not found")
-        if finit is False:
+        if boolitem is False:
             sendmsg(channel, "that item was not found!")
-        if finus is True and finit is True:
-            purchaseitem(usern, purchase_item, channel)
+        if booluser is True and boolitem is True and\
+           purchaseitem(usern, purchase_item, channel) is True:
+            sendmsg(channel, "user: %s, %s, purchased: %s, %s" % (username,
+                                                                  userbank,
+                                                                  itemname,
+                                                                  itemcost))
 
     elif command == "find" or command == "findme" or command == "finditem" or command == "findthing":
         print "general find was called"
