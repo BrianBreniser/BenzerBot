@@ -214,7 +214,7 @@ def zuulbot(usern, channel, command, arglist):
         # End special cases
 
         booluser, username, userbank = finduser(usern, channel, quiet=True)
-        boolitem, itemname, itemcost = finditem(purchase_item, quiet=True)
+        boolitem, itemname, itemcost = finditem(purchase_item, channel, quie=True)
         if booluser is False:
             sendmsg(channel, "that user was not found")
         if boolitem is False:
