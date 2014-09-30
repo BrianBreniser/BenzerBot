@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+""" A python bot with multiple functions. """
 import socket
 import ssl
 import requests  # will make post requests to api
 import json as j
 from time import sleep, time
-#import time
+# import time
 # Some basic variables used to configure the bot
 server = "irc.cat.pdx.edu"  # Server
 botnick = "bb"  # Your bots nick
@@ -16,11 +17,13 @@ timestamp = time()
 
 
 def pong():
+    """ Keep bot alive to server. """
     ircsock.send("PONG :pingis\n")
     print "I PONG'd"
 
 
 def sendmsg(chan, msg):  # send msg to chan
+    """ general sendmsg function. """
     global timestamp
     while time() <= timestamp + 1:
         sleep(.1)
@@ -29,10 +32,12 @@ def sendmsg(chan, msg):  # send msg to chan
 
 
 def joinchan(chan):  # This function is used to join channels.
+    """ simple joinchan function. """
     ircsock.send("JOIN " + chan + "\n")
 
 
 def addchan(chan):
+    """ simple add channel function. """
     channelz = open("channel_list", "a")
     channelz.write(chan + "\n")
     channelz.close()
@@ -226,11 +231,15 @@ def zuulbot(usern, channel, command, arglist):
                                                                   itemname,
                                                                   itemcost))
 
-    elif command == "find" or command == "findme" or command == "finditem" or command == "findthing":
+    elif command == "find":
         print "general find was called"
-        find_me = concat_list(arglist)
-        if finditem(find_me, channel) is False:
-            if finduser(find_me, channel) is False:
+        find_me = concat_list(arglist)  # get the item/user argument
+        # set boolitem to true if found, false if not
+        boolitem, itemname, itemcost = finditem(find_me, channel)
+        if boolitem is False:
+            # set booluser to true if found, false if not
+            booluser, username, userbank = finduser(find_me, channel)
+            if booluser is False:
                 sendmsg(channel, "did not find, please check spelling (check zuul.cat.pdx.edu/newzuul for list)")
 
     elif command == "finduser" or command == "fus" or command == "finditem" or command == "fit":
