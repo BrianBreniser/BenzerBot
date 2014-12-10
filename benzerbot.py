@@ -202,7 +202,7 @@ def addtobank(usern, ammount, channel):
         # sendmsg(channel, str(return_text))  # debugging lines
         # sendmsg(channel, str(r.text))  # debugging lines
         if return_text["success"] == "false":
-            sendmsg(channel, "The addition to " + usern + "'s bank was unsuccessful, is your username added to zuul?")
+            sendmsg(channel, "error code: " + str(return_text["error"]))
         elif return_text["success"] == "true":
             return True
     else:
@@ -298,7 +298,11 @@ def zuulbot(usern, channel, command, arglist):
         print "addbank was called"
         ammount = concat_list(arglist)  # get the item/user argument
 
-        print "return code on addtobank is: " + str(addtobank(usern, ammount))
+        booluser0, username0, userbank0 = finduser(usern, channel, quiet=True)
+        boolbank = addtobank(usern, ammount, channel)
+        if boolbank is not False:
+            booluser1, username1, userbank1 = finduser(usern, channel, quiet=True)
+            sendmsg(channel, "worked!")  # "user: " + str(usern) + " had bank: " + str(userbank0) + "and added" + str(ammount) + " and now has: " + str(userbank0))
 
         # set boolitem to true if found, false if not
 
