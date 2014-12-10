@@ -207,8 +207,7 @@ def addtobank(usern, ammount, channel):
             return True
     else:
         sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
-
-    return False
+        return False
 
 # - End Helper Functions - #
 
