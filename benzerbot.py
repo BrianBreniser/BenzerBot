@@ -189,6 +189,27 @@ def purchaseitem(usern, item_name, channel):
     else:
         sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
 
+
+def addtobank(usern, ammount, channel):
+    """add monies to bank for user."""
+    print "addtobank helper function called"
+    weblocation = "http://zuul.cat.pdx.edu"
+
+    payload = {"name": usern, "ammount": ammount}
+    r = requests.post(weblocation + "/newzuul/v1/addbank/", data=payload)
+    if r.status_code == 200:
+        return_text = j.loads(r.text)
+        # sendmsg(channel, str(return_text))  # debugging lines
+        # sendmsg(channel, str(r.text))  # debugging lines
+        if return_text["success"] == "false":
+            sendmsg(channel, "The addition to " + usern + "'s bank was unsuccessful, is your username added to zuul?")
+        elif return_text["success"] == "true":
+            return True
+    else:
+        sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
+
+    return False
+
 # - End Helper Functions - #
 
 
@@ -202,6 +223,7 @@ def zuulbot(usern, channel, command, arglist):
         sendmsg(channel, "(buy|purchase) $item: purchases an item")
         sendmsg(channel, "find ($user|$item) $user: display users bank, $item: displays item price")
         sendmsg(channel, "(listitems|li): list's all items (in theory)")
+        sendmsg(channel, "(addbank|addmonies|bank +=|addfunds|addmoney): add money to your bank")
         sendmsg(channel, "you may /query bb and use zb: commands like normal")
 
     elif command == "buy" or command == "purchase":
@@ -271,6 +293,14 @@ def zuulbot(usern, channel, command, arglist):
                     sendmsg(usern, "%s: %s" % (str(item), str(return_dict[item])))
         else:
             sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
+
+    elif command == "addbank" or command == "addfunds" or command == "addmonies" or command == "addmoney" or command == "bank +=":
+        print "addbank was called"
+        ammount = concat_list(arglist)  # get the item/user argument
+
+        print "return code on addtobank is: " + str(addtobank(usern, ammount))
+
+        # set boolitem to true if found, false if not
 
 # --- End Zuulbot's functions --- #
 
