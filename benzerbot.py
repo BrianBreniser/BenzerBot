@@ -201,6 +201,9 @@ def zuulbot(usern, channel, command, arglist):
         # into one string, and send that string as a single argument
         purchase_item = concat_list(arglist)
 
+        if usern == "zaalatta":
+            usern = "zolo"
+
         # a bunch of special purchase cases
         soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can",
                      "soda", "mtdew", "mt.dew", "mountain dew")
@@ -226,10 +229,12 @@ def zuulbot(usern, channel, command, arglist):
             sendmsg(channel, "that item was not found!")
         if booluser is True and boolitem is True and\
            purchaseitem(usern, purchase_item, channel) is True:
-            sendmsg(channel, "user: %s, %s, purchased: %s, %s" % (username,
-                                                                  userbank,
-                                                                  itemname,
-                                                                  itemcost))
+           boolusernew, usernamenew, userbanknew = finduser(usern, channel, quiet=True)
+           sendmsg(channel, "user: %s, %s, purchased: %s, %s and now has: %s left" % (username,
+                                                                                      userbank,
+                                                                                      itemname,
+                                                                                      itemcost,
+                                                                                      userbanknew))
 
     elif command == "find":
         print "general find was called"
@@ -245,7 +250,7 @@ def zuulbot(usern, channel, command, arglist):
     elif command == "finduser" or command == "fus" or command == "finditem" or command == "fit":
         sendmsg(channel, "command %s is defunct, please use 'find' for all searches from now on" % command)
 
-    elif command == "listitems" or command == "li":
+    elif command == "listitems" or command == "li" or command == "inventory":
         print "listitems was called"
         payload = {"name": arglist[0], "item": arglist[1]}
         r = requests.post(weblocation + "/newzuul/v1/listall/", data=payload)
@@ -255,7 +260,7 @@ def zuulbot(usern, channel, command, arglist):
                 if item == "success":
                     continue
                 else:
-                    sendmsg(channel, "%s: %s" % (str(item), str(return_dict[item])))
+                    sendmsg(usern, "%s: %s" % (str(item), str(return_dict[item])))
         else:
             sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
 
@@ -317,7 +322,6 @@ def benzerbot(user, channel, command, arglist):
 # --- End Benzerbot's functions --- #
 
 # --- Start infinite loop to do bot things --- #
-
 
 def main():
     while 1:  # Be careful with these! it might send you to an infinite loop
