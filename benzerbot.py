@@ -44,6 +44,7 @@ def addchan(chan):
 
 
 def isadmin(usertocheck):  # returns a string, not an int (why I have no fucking idea)
+    """ Check to see if the user is admin."""
     myadmin = '0'
     admins = open("admins", "r")
     for admin in admins:
@@ -60,12 +61,14 @@ def isadmin(usertocheck):  # returns a string, not an int (why I have no fucking
 
 
 def addadmin(username):
+    """add an admin."""
     adminz = open("admins", "a")
     adminz.write(username.lower() + "\n")
     adminz.close()
 
 
 def concat_list(list_in):  # Creates strings (with spaces) out of a list sent in
+    """Concat a list of strings into one string."""
     print "concat_list was called"
     my_string = ""
     for word in list_in:
@@ -82,12 +85,12 @@ ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ircsock.connect((server, 6697))  # Connect to the server using the port 6667
 ircsock = ssl.wrap_socket(ircsock)
 ircsock.send("USER " + botnick + " " + botnick + " " + botnick +
-    " :This is benzers bot\n")  # user authentication
+             " :This is benzers bot\n")  # user authentication
 ircsock.send("NICK " + botnick + "\n")  # Actually assign the nick to the bot
 ircsock.send("PRIVMSG NickServ :" + 'IDENTIFY ' + password + "\n")
 
 
-#Open all channels in chanel_list file
+# Open all channels in chanel_list file
 channels = open("channel_list", "r")
 for channel in channels:
     joinchan(channel)
@@ -99,6 +102,7 @@ channels.close()
 
 
 def bdbot(user, channel, command, arglist):
+    """will never be built :(."""
     print "bdbot was called"
 
     sendmsg(channel, "Hey, bdbot is not done being build yet!!")
@@ -116,6 +120,7 @@ def bdbot(user, channel, command, arglist):
 
 
 def finduser(usern, channel, quiet=False):
+    """Find a user."""
     print "finduser helper function was called"
     weblocation = "http://zuul.cat.pdx.edu"
 
@@ -133,6 +138,7 @@ def finduser(usern, channel, quiet=False):
 
 
 def finditem(item_name, channel, quiet=False):
+    """Find an item."""
     print "finditem helper function called"
     weblocation = "http://zuul.cat.pdx.edu"
 
@@ -166,6 +172,7 @@ def finditem(item_name, channel, quiet=False):
 
 
 def purchaseitem(usern, item_name, channel):
+    """Purchase an item using the username that called the function."""
     print "purchaseitem helper function called"
     weblocation = "http://zuul.cat.pdx.edu"
 
@@ -173,8 +180,8 @@ def purchaseitem(usern, item_name, channel):
     r = requests.post(weblocation + "/newzuul/v1/purchase/", data=payload)
     if r.status_code == 200:
         return_text = j.loads(r.text)
-        #sendmsg(channel, str(return_text))  # debugging lines
-        #sendmsg(channel, str(r.text))  # debugging lines
+        # sendmsg(channel, str(return_text))  # debugging lines
+        # sendmsg(channel, str(r.text))  # debugging lines
         if return_text["success"] == "false":
             sendmsg(channel, "The Purchase was unsuccessful, is your username added to zuul? Is the item's name correct? ")
         elif return_text["success"] == "true":
@@ -186,6 +193,7 @@ def purchaseitem(usern, item_name, channel):
 
 
 def zuulbot(usern, channel, command, arglist):
+    """number of commands for zuulbot."""
     weblocation = "http://zuul.cat.pdx.edu"
     print "zuulbot was called"
 
@@ -229,12 +237,12 @@ def zuulbot(usern, channel, command, arglist):
             sendmsg(channel, "that item was not found!")
         if booluser is True and boolitem is True and\
            purchaseitem(usern, purchase_item, channel) is True:
-           boolusernew, usernamenew, userbanknew = finduser(usern, channel, quiet=True)
-           sendmsg(channel, "user: %s, %s, purchased: %s, %s and now has: %s left" % (username,
-                                                                                      userbank,
-                                                                                      itemname,
-                                                                                      itemcost,
-                                                                                      userbanknew))
+            boolusernew, usernamenew, userbanknew = finduser(usern, channel, quiet=True)
+            sendmsg(channel, "user: %s, %s, purchased: %s, %s and now has: %s left" % (username,
+                                                                                       userbank,
+                                                                                       itemname,
+                                                                                       itemcost,
+                                                                                       userbanknew))
 
     elif command == "find":
         print "general find was called"
@@ -270,6 +278,7 @@ def zuulbot(usern, channel, command, arglist):
 
 
 def benzerbot(user, channel, command, arglist):
+    """Number of commands for benzerbot."""
     print "benzerbot was called"
 
     if command == "hello" or command == "hi" or command == "hola" or command == "oi" or command == "hey":
@@ -323,17 +332,19 @@ def benzerbot(user, channel, command, arglist):
 
 # --- Start infinite loop to do bot things --- #
 
+
 def main():
+    """Our infinite loop of catching user input."""
     while 1:  # Be careful with these! it might send you to an infinite loop
         ircmsg = ircsock.recv(2048)  # receive data from the server
         ircmsg = ircmsg.strip('\n\r')  # removing any unnecessary linebreaks.
         print ircmsg  # Here we print what's coming from the server
 
-        #imediatly PONG
+        # imediatly PONG
         if ircmsg.find("PING") != -1:  # PONG on server PING
             pong()
 
-        #Kicks if somebody talks
+        # Kicks if somebody talks
         if ircmsg.find("PRIVMSG"):
             splitircmsg = ircmsg.split() + [" ", " ", " "]  # cuts stringf
             user = str(splitircmsg[0].split("!")[0]).replace(":", "")  # user
