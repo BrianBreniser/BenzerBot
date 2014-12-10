@@ -222,7 +222,7 @@ def zuulbot(usern, channel, command, arglist):
         sendmsg(channel, "(buy|purchase) $item: purchases an item")
         sendmsg(channel, "find ($user|$item) $user: display users bank, $item: displays item price")
         sendmsg(channel, "(listitems|li): list's all items (in theory)")
-        sendmsg(channel, "(addbank|addmonies|bank +=|addfunds|addmoney): add money to your bank")
+        sendmsg(channel, "(addbank|addmonies|bank+=|addfunds|addmoney|add): add money to your bank")
         sendmsg(channel, "you may /query bb and use zb: commands like normal")
 
     elif command == "buy" or command == "purchase":
@@ -293,7 +293,7 @@ def zuulbot(usern, channel, command, arglist):
         else:
             sendmsg(channel, "benzer, halp! r.status_code was %s" % str(r.status_code))
 
-    elif command == "addbank" or command == "addfunds" or command == "addmonies" or command == "addmoney" or command == "bank +=":
+    elif command == "addbank" or command == "addfunds" or command == "addmonies" or command == "addmoney" or command == "bank+=" or command == "add":
         print "addbank was called"
         ammount = concat_list(arglist)  # get the item/user argument
 
