@@ -299,8 +299,7 @@ def zuulbot(usern, channel, command, arglist):
         ammount = concat_list(arglist)  # get the item/user argument
 
         booluser0, username0, userbank0 = finduser(usern, channel, quiet=True)
-        if addtobank(usern, ammount, channel) is False:
-            sendmsg(channel, "failed for some reason")
+        boolbank = addtobank(usern, ammount, channel)
         booluser1, username1, userbank1 = finduser(usern, channel, quiet=True)
         sendmsg(channel, "worked!")  # "user: " + str(usern) + " had bank: " + str(userbank0) + "and added" + str(ammount) + " and now has: " + str(userbank0))
 
