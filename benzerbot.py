@@ -300,6 +300,7 @@ def zuulbot(usern, channel, command, arglist):
 
         booluser0, username0, userbank0 = finduser(usern, channel, quiet=True)
         boolbank = addtobank(usern, ammount, channel)
+        sendmsg(channel, "code is: " + str(boolbank))
         if boolbank is not False:
             booluser1, username1, userbank1 = finduser(usern, channel, quiet=True)
             sendmsg(channel, "worked!")  # "user: " + str(usern) + " had bank: " + str(userbank0) + "and added" + str(ammount) + " and now has: " + str(userbank0))
