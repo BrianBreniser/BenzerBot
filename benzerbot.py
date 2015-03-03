@@ -124,6 +124,10 @@ def finduser(usern, channel, quiet=False):
     print "finduser helper function was called"
     weblocation = "http://zuul.cat.pdx.edu"
 
+    # One "special" persons case for one person who feels their username should not be their zuulname too ;)
+    if str(usern) == str("zaalatta"):
+        usern = "zolo"
+
     payload = {"name": usern}
     r = requests.post(weblocation + "/newzuul/v1/finduser/", data=payload)
     if r.status_code == 200:
@@ -223,6 +227,7 @@ def zuulbot(usern, channel, command, arglist):
         sendmsg(channel, "find ($user|$item) $user: display users bank, $item: displays item price")
         sendmsg(channel, "(listitems|li): list's all items (in theory)")
         sendmsg(channel, "(addbank|addmonies|bank+=|addfunds|addmoney|add): add money to your bank")
+        sendmsg(channel, "source: will give github source link")
         sendmsg(channel, "you may /query bb and use zb: commands like normal")
 
     elif command == "buy" or command == "purchase":
@@ -230,8 +235,9 @@ def zuulbot(usern, channel, command, arglist):
         # into one string, and send that string as a single argument
         purchase_item = concat_list(arglist)
 
-        if usern == "zaalatta":
-            usern = "zolo"
+    	# One "special" persons case for one person who feels their username should not be their zuulname too ;)
+    	if str(usern) == str("zaalatta"):
+        	usern = "zolo"
 
         # a bunch of special purchase cases
         soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can",
@@ -305,6 +311,11 @@ def zuulbot(usern, channel, command, arglist):
 
         # set boolitem to true if found, false if not
 
+    elif command == "source" or command == "Source" or command == "-source" or command == "--source":
+        print "source command called"
+        source = "https://github.com/BrianBreniser/BenzerBot"
+        sendmsg(channel, "Source code is: " + source)
+
 # --- End Zuulbot's functions --- #
 
 # --- Start Benzerbot's functions --- #
@@ -356,6 +367,7 @@ def benzerbot(user, channel, command, arglist):
         sendmsg(channel, "you can also address:")
         sendmsg(channel, "(zuulbot|zb): help")
         sendmsg(channel, "(bdbot|bd): help")
+        sendmsg(channel, "source")
 
     elif command == "pme":
         print "pme was called"
