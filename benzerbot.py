@@ -125,8 +125,8 @@ def finduser(usern, channel, quiet=False):
     weblocation = "http://zuul.cat.pdx.edu"
 
     # One "special" persons case for one person who feels their username should not be their zuulname too ;)
-    if str(usern) == str("zaalatta"):
-        usern = "zolo"
+    # if str(usern) == str("zaalatta"):
+    #     usern = "zolo"
 
     payload = {"name": usern}
     r = requests.post(weblocation + "/newzuul/v1/finduser/", data=payload)
@@ -221,6 +221,10 @@ def zuulbot(usern, channel, command, arglist):
     weblocation = "http://zuul.cat.pdx.edu"
     print "zuulbot was called"
 
+    # One "special" persons case for one person who feels their username should not be their zuulname too ;)
+    if str(usern) == str("zaalatta"):
+        usern = "zolo"
+
     if command == "help" or command == "halp" or command == "?" or command == "-help" or command == "--help":
         sendmsg(channel, "I respond to zuulbot, zuulbot:, zb or zb:")
         sendmsg(channel, "(buy|purchase) $item: purchases an item")
@@ -236,8 +240,8 @@ def zuulbot(usern, channel, command, arglist):
         purchase_item = concat_list(arglist)
 
     	# One "special" persons case for one person who feels their username should not be their zuulname too ;)
-    	if str(usern) == str("zaalatta"):
-        	usern = "zolo"
+    	# if str(usern) == str("zaalatta"):
+        #	usern = "zolo"
 
         # a bunch of special purchase cases
         soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can",
