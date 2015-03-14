@@ -213,6 +213,16 @@ def addtobank(usern, ammount, channel):
         sendmsg(channel, "benzer, halp! r.status_code is %s" % str(r.status_code))
         return False
 
+
+def addfunds(usern, ammount):
+    """ add arbitrary funds to users bank. """
+    print "addfunds wrapper function called"
+    weblocation = "http://zuul.cat.pdx.edu"
+
+    payload = {"name": usern, "ammount": ammount}
+    r = requests.post(weblocation + "/newzuul/v1/???/", data=payload)
+    r.status_code
+
 # - End Helper Functions - #
 
 
@@ -239,9 +249,9 @@ def zuulbot(usern, channel, command, arglist):
         # into one string, and send that string as a single argument
         purchase_item = concat_list(arglist)
 
-    	# One "special" persons case for one person who feels their username should not be their zuulname too ;)
-    	# if str(usern) == str("zaalatta"):
-        #	usern = "zolo"
+        # One "special" persons case for one person who feels their username should not be their zuulname too ;)
+        # if str(usern) == str("zaalatta"):
+        # usern = "zolo"
 
         # a bunch of special purchase cases
         soda_list = ("coke", "pepsi", "sprite", "drpepper", "dr.pepper", "can",
@@ -319,6 +329,9 @@ def zuulbot(usern, channel, command, arglist):
         print "source command called"
         source = "https://github.com/BrianBreniser/BenzerBot"
         sendmsg(channel, "Source code is: " + source)
+
+    elif command == "gift":
+        print "gift command called"
 
 # --- End Zuulbot's functions --- #
 
